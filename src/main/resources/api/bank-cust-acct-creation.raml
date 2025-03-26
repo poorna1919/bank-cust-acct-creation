@@ -1,0 +1,26 @@
+#%RAML 1.0
+title: bank-cust-acct-creation
+description: API for cust acct creation
+version: v1
+protocols: [HTTP, HTTPS]
+mediaType: [application/json]
+securitySchemes:
+  basic:
+    description: |
+      This API supports Basic Authentication.
+    type: Basic Authentication
+securedBy: [basic]
+traits: 
+  trait: !include /Traits/trait.raml
+
+/createAccount:
+  post:
+    is: [trait]
+    body:
+      type: !include /data types/dataType.raml
+      example: !include /examples/request.json
+    responses:
+      201:
+        body:
+          example: !include /examples/response.json
+              

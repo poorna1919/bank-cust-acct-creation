@@ -1,0 +1,22 @@
+api:
+  id: "12345678"
+mule:
+  env: "dev"
+  
+http:
+  base:
+    versionpath: "v1/*"
+    
+#request configuration
+systemapi:
+  request:
+    host: "dummy.restapiexample.com"
+    protocol: "HTTPS"
+    port: "443"
+    basePath: "/api/v1"
+    client_id: ""
+    default.responseTimeout: "30000"
+    conntimeout: "30000"
+    resourcePath:
+      check: "/employees"
+      

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd ">
+    <flow name="bank-cust-acct-creation-main">
+        <http:listener path="/api/*" config-ref="httpListenerConfig">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <logger level="INFO" doc:name="INFO - entry" doc:id="4b6c5c52-a9ea-4e65-bd22-02139d975706" message="Entry before apikit router" />
+		<ee:transform doc:name="default params" doc:id="c4140654-ea59-49fd-9665-3ed8ba01584a" >
+			<ee:message />
+			<ee:variables >
+				<ee:set-variable variableName="inputRequest" ><![CDATA[%dw 2.0
+output application/json
+---
+if(isEmpty(payload)== true)"NA" else payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<apikit:router config-ref="bank-cust-acct-creation-config"/>
+		<logger level="INFO" doc:name="INFO - exit" doc:id="c310fa8f-a29c-44bf-86dd-c732d356f61b" message="Exit after apikit router" />
+		<error-handler ref="global-error-handling" />
+    </flow>
+    <flow name="post:\createAccount:application\json:bank-cust-acct-creation-config">
+		<flow-ref doc:name="acct-creation-implementation" doc:id="15d66554-5af8-46be-a03d-5dd64790ec17" name="acct-creation-implementation"/>
+    </flow>
+</mule>

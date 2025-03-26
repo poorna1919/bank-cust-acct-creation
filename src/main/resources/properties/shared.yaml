@@ -1,0 +1,38 @@
+#listener configuration
+http:
+  host: "0.0.0.0"
+  port: "8081"
+  base:
+    path: "/api"
+  listener:
+    protocol: "HTTP"
+    timeout: "60000"
+    read.timeout: "30000"
+    
+#json configuration
+json:
+  logger:
+    application:
+      name: "reference-api"
+      version: "v1"
+    disable_fields: "content"
+    mask_fields: ""
+    debug_category: ""
+    
+#retry configurations
+retry:
+  default:
+    count: "1"
+    time: "1000"
+
+status:
+  success: "Success"
+
+default:
+  connectivityError: "CONNECTIVITY"
+  errorStatus: "Error"
+  UnknownError: "Unknown Error"
+  conflictError: "CUSTOM_CONFLICT"
+  
+technicalAcknowledgement: "Technical Acknowledgement" 
+  

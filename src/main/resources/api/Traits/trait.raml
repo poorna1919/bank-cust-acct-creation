@@ -1,0 +1,39 @@
+#%RAML 1.0 Trait
+
+queryParameters:
+      customerName:
+        required: true
+        maxLength: 45
+        minLength: 4
+      bank:
+        required: true
+        enum: [ICICI, AXIS, HDFC]
+      type:
+        required: true
+        enum: [current, savings]
+      branchName:
+        required: true
+        minLength: 4
+        maxLength: 10
+      
+responses:
+  400:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Bad Request", "errorCode":"400"}
+  404:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Not Found", "errorCode":"404"}
+  401:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Unauthorized", "errorCode":"401"}
+  500:
+    body:
+      application/json:
+        example: |
+          {"errorMessage":"Internal Server Error", "errorCode":"500"}

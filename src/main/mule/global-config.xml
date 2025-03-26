@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:secure-properties="http://www.mulesoft.org/schema/mule/secure-properties"
+	xmlns:api-gateway="http://www.mulesoft.org/schema/mule/api-gateway"
+	xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/api-gateway http://www.mulesoft.org/schema/mule/api-gateway/current/mule-api-gateway.xsd
+http://www.mulesoft.org/schema/mule/secure-properties http://www.mulesoft.org/schema/mule/secure-properties/current/mule-secure-properties.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<http:listener-config name="httpListenerConfig" doc:name="HTTP Listener config" doc:id="3b84c03a-4a55-429e-9c5f-006edbbfbd49" doc:description="Listener Configuration" >
+		<http:listener-connection host="${http.host}" port="${http.port}" readTimeout="${http.listener.read.timeout}"/>
+	</http:listener-config>
+	<apikit:config outboundHeadersMapName="outboundHeadersMapName" httpStatusVarName="httpStatus" doc:name="Router" doc:id="301a9ad0-7016-491b-947a-90a4226c16ac" doc:description="Router Configuration" name="bank-cust-acct-creation-config" api="api\bank-cust-acct-creation.raml" />
+	<api-gateway:autodiscovery apiId="${api.id}" ignoreBasePath="true" doc:name="API Autodiscovery" doc:id="e54fc954-bf01-4d03-8479-38a21d1d7760" doc:description="Autodiscovery Details" flowRef="bank-cust-acct-creation-main" />
+	<configuration-properties doc:name="Configuration properties" doc:id="01d53a5a-0785-419a-a1d4-f6c49c743209" file="properties\shared.yaml" doc:description="Shared Properties"/>
+	<configuration-properties doc:name="Configuration properties" doc:id="1996fe60-5987-4a02-bec2-e9624d316e89" file="properties/${mule.env}/${mule.env}.yaml" doc:description="Environment Specific Properties"/>
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="f463d68e-9436-4349-b8ab-836148a623de" >
+		<email:smtp-connection host="smtp.gmail.com" port="587" user="poornasai1919@gmail.com" password="gjptfhkzbknrfjsg" >
+			<email:properties >
+				<email:property key="mail.smtp.starttls.enable" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+</mule>

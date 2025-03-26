@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<error-handler name="global-error-handling" doc:id="98c2b95d-0439-49db-860d-5dff201fa671" >
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="8c009fb5-d563-47b4-84e6-ccc0755d9222" type="HTTP:BAD_REQUEST,HTTP:PARSING,APIKIT:BAD_REQUEST">
+			<set-variable value="#[400]" doc:name="set http status - 400" doc:id="16b2efb5-3558-4c79-91f8-4cab45036e0a" variableName="httpStatus"/>
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="6ccdabc0-27f3-4e3b-94a9-0885bea84b1c" name="common-error-response-sub-flow"/>
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="040a489a-1ac8-429b-8ddb-502469a05df7" type="HTTP:CLIENT_SECURITY,HTTP:SECURITY,SECURITY,HTTP:UNAUTHORIZED" >
+			<set-variable value="#[401]" doc:name="set http status - 401" doc:id="1b41cde5-3984-45d0-b3bd-82bdde492f71" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="4bb72148-6d1c-41c0-b5a2-93f4c09cfced" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="21c5df7c-1542-4f39-afa7-b5695b35b1e2" type="HTTP:FORBIDDEN" >
+			<set-variable value="#[403]" doc:name="set http status - 403" doc:id="afd54a55-b6e9-429e-b9d9-ab2650774772" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="b9e496ed-424b-4445-9432-c7599e7c57c3" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a0ffe0b9-8068-49e1-90e8-4eb149fe1cb4" type="HTTP:NOT_FOUND,APIKIT:NOT_FOUND" >
+			<set-variable value="#[404]" doc:name="set http status - 404" doc:id="c64ffd86-2542-49db-a3ca-78724f25c40c" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="14cbef70-458f-4c4d-aa45-7ccc97a10d8d" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="0c409d76-a5e0-443d-b076-4bdf113bb25f" type="HTTP:METHOD_NOT_ALLOWED,APIKIT:METHOD_NOT_ALLOWED" >
+			<set-variable value="#[405]" doc:name="set http status - 405" doc:id="4746c436-b8c0-4f8e-b9c7-7d89717519c9" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="b46b5ca5-9a4c-4c0e-8c5a-db0ed053e6a0" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="67a33a6f-ab05-484f-a8db-a676cab1b2b6" type="HTTP:UNSUPPORTED_MEDIA_TYPE,APIKIT:UNSUPPORTED_MEDIA_TYPE" >
+			<set-variable value="#[415]" doc:name="set http status - 415" doc:id="02bc5c80-feca-4b49-bed3-781ff0511ccd" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="358f4681-4cba-496f-b108-17dfa6ab34a6" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="f93bfa8e-7ca4-4120-9e15-1bc712cb0294" type="HTTP:CONNECTIVITY,CONNECTIVITY,HTTP:SERVICE_UNAVAILABLE" >
+			<set-variable value="#[503]" doc:name="set http status - 503" doc:id="119be225-629e-4f55-bffa-5548e30c687b" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="ec6bca5f-ee93-4bb1-9819-268605f34e8d" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a7cc16ab-85a8-4fdd-94ba-afaee7c84b65" type="HTTP:TIMEOUT,TIMEOUT,HTTP:GATEWAY_TIMEOUT" >
+			<set-variable value="#[504]" doc:name="set http status - 504" doc:id="dfff27d3-26c3-4044-aca4-6dd5584b9d31" variableName="httpStatus" />
+			<flow-ref doc:name="common-error-response-sub-flow" doc:id="70f8e7df-9a77-4323-a2f3-9e7447678f5c" name="common-error-response-sub-flow" />
+		</on-error-continue>
+		<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="bd743c0d-337c-4a78-834e-9d5814a15723" type="ANY" >
+			<choice doc:name="custom check error status code" doc:id="57558567-9877-48a4-93ed-7fb4efab5a5c" >
+				<when expression="#[vars.error_object.muleMessage.attributes.StatusCode != null]">
+					<set-variable value="#[vars.error_object.muleMessage.attributes.StatusCode]" doc:name="set http status" doc:id="51c3dac8-c68a-4994-a264-3849f89a2233" variableName="httpStatus" />
+					<flow-ref doc:name="common-error-response-sub-flow" doc:id="f5e87b4a-4d73-42b8-b07a-feb7ab3dc442" name="common-error-response-sub-flow" />
+				</when>
+				<when expression="#[error.muleMessage.attributes.StatusCode != null]">
+					<set-variable value="#[error.muleMessage.attributes.StatusCode]" doc:name="set http status" doc:id="f2ad234e-2c9c-4238-ba7d-04008f0c145a" variableName="httpStatus"/>
+					<flow-ref doc:name="common-error-response-sub-flow" doc:id="211869e0-eea6-4355-939d-5f6938f148ed" name="common-error-response-sub-flow" />
+				</when>
+				<otherwise >
+					<logger level="INFO" doc:name="Logger" doc:id="66a4d592-5c99-40be-a74a-1e98191c9d4a" message='#["Into Other Errors"]'/>
+					<set-variable value="#[500]" doc:name="set http status - 500" doc:id="ec4f74e1-037f-41f0-a671-d25a6d3e72e1" variableName="httpStatus" />
+					<flow-ref doc:name="common-error-response-sub-flow" doc:id="8f7b4d18-d51d-46c0-a81c-aa7cd78df45e" name="common-error-response-sub-flow" />
+				</otherwise>
+			</choice>
+		</on-error-continue>
+	</error-handler>
+	<sub-flow name="common-error-response-sub-flow" doc:id="63ace56a-acf4-416e-8649-748d9a48cbd7" >
+		<ee:transform doc:name="error" doc:id="39f20a93-2480-492c-a8ee-28ae26d459a4" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="error" ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"errorCode": vars.httpStatus,
+	"errorType": if(vars.error_object == null) error.errorType.asString else vars.error_object.errorType.asString,
+	"errorDescription": if(vars.error_object == null)
+	(if(error.muleMessage.typedValue != null) error.muleMessage.typedValue default p('default.UnknownError')
+		else error.description)
+	else
+	(if(vars.error_object.muleMessage.typedValue != null) if(isEmpty(vars.error_object.muleMessage.typedValue)) vars.error_object.description else vars.error_object.muleMessage.typedValue default p('default.UnknownError')
+		else vars.error_object.description),
+	"detailedDescription": if(vars.error_object == null) error.description else vars.error_object.description
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="Error - exception - log" doc:id="3b39ea2e-ee01-4e14-b92c-6e2f5056a28b" message='#["Error Occurred"]'/>
+		<ee:transform doc:name="error response" doc:id="54b9eae7-85a9-420f-991a-1357cd1116cd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status": p('default.errorStatus'),
+	"message": {
+		"correlationId": correlationId,
+		"description": {
+			"errorType": if(vars.error.errorType == "APIKIT.RETRY_EXHAUSTED") p('default.connectivityError') else vars.error.errorType default p('default.connectivityError'),
+			"errorDescription": vars.error.errorDescription default p('default.UnknownError')
+		}
+	}
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</sub-flow>
+</mule>

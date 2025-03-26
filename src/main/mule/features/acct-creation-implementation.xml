@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:salesforce="http://www.mulesoft.org/schema/mule/salesforce"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/salesforce http://www.mulesoft.org/schema/mule/salesforce/current/mule-salesforce.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="6ad38963-865b-444e-aac4-727258eb265c" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Kandagatla@4" database="bank" />
+	</db:config>
+	<sub-flow name="acct-creation-implementation" doc:id="933d2ef6-2271-411e-a04d-907ebf5d3b29" >
+		<ee:transform doc:name="init params" doc:id="b39cb4fc-01df-45a7-9644-3e9e3cd0838f" >
+			<ee:message >
+			</ee:message>
+			<ee:variables >
+				<ee:set-variable variableName="initParams" ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"customerName" : attributes.queryParams.customerName,
+	"bank" : attributes.queryParams.bank,
+	"accType" : attributes.queryParams."type",
+	"branchName": attributes.queryParams.branchName,
+	"custAccNum" : payload.accountNum
+}]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<logger level="INFO" doc:name="INFO - before request" doc:id="f39c9033-6679-427d-b3cf-f172a248d75c" message="----------create cust account API begin-------- the input is #[payload]" />
+		<set-variable value="#[[]]" doc:name="empty list" doc:id="0f3a8c7a-04c2-4624-89e1-012523c77d7d" variableName="inputPayload" />
+		<ee:transform doc:name="add input payload" doc:id="5df9ac13-4da3-4a90-8134-9dbc94a29345">
+			<ee:message>
+			</ee:message>
+			<ee:variables>
+				<ee:set-variable variableName="inputPayload"><![CDATA[%dw 2.0
+output application/json
+---
+vars.inputPayload << payload]]></ee:set-variable>
+			</ee:variables>
+		</ee:transform>
+		<until-successful maxRetries="${retry.default.count}" doc:name="Until Successful" doc:id="9f808e04-c563-44f1-b5cf-587e46810831" millisBetweenRetries="${retry.default.time}">
+			<try doc:name="Try" doc:id="3d74cf90-88bf-4d72-be08-b95ba9431017" >
+				<db:select doc:name="Select" doc:id="698ae63f-dfeb-47e4-bfe8-e96987eb7d68" config-ref="Database_Config">
+					<db:sql><![CDATA[SELECT custAccNum,bankName FROM bank.bank_transactions where custAccNum = :custAccNum and bankName = :bankName;]]></db:sql>
+					<db:input-parameters><![CDATA[#[{
+	"custAccNum" : payload.accountNum,
+	"bankName" : vars.initParams.bank
+}]]]></db:input-parameters>
+				</db:select>
+				<error-handler >
+					<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="2eb5dda2-fd83-402d-aaae-3bd02d64054d" when='#[error.errorType.identifier != "CONNECTIVITY" and error.errorType.identifier != "TIMEOUT" and error.errorType.identifier != "BAD_GATEWAY"]'>
+						<ee:transform doc:name="create error variable" doc:id="3411b75c-c081-4cfe-ad8f-1ce5fc46b3cc" >
+							<ee:message >
+							</ee:message>
+							<ee:variables >
+								<ee:set-variable variableName="error_object" ><![CDATA[%dw 2.0
+output application/java
+---
+error]]></ee:set-variable>
+							</ee:variables>
+						</ee:transform>
+					</on-error-continue>
+				</error-handler>
+			</try>
+		</until-successful>
+		<validation:is-true doc:name="Check for errors other than connectivity errors" doc:id="a0632927-3648-4ff8-9f86-eadcd6d76965" expression="#[vars.error_object == null]" message="#[vars.error_object.detailDescription]" />
+		<choice doc:name="Choice" doc:id="1d8c7a2a-05b7-47ed-8417-d72d124fd5ef" >
+			<when expression="#[sizeOf(payload)&gt;=1]">
+				<ee:transform doc:name="output response" doc:id="06dc2543-de00-4b47-84f1-add1925a4567">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+(vars.inputPayload map(val,index) ->
+{
+	"Message": "Account $(val.accountNum) already exist"
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</when>
+			<otherwise>
+				<db:insert doc:name="Insert" doc:id="09526cc1-f237-48e4-a0d5-b8a19b0cb016" config-ref="Database_Config">
+					<db:sql ><![CDATA[INSERT INTO bank.Bank_Transactions(custName,custAccNum,atmPin,bankName,accountType,ifscCode,branchName,transactionTimeStamp,mailld,phoneNumber)
+VALUES (:custName,:custAccNum,:atmPin,:bankName,:accountType,:ifscCode,:branchName,:transactionTimeStamp,:mailId,:phoneNumber)]]></db:sql>
+					<db:input-parameters ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	(vars.inputPayload map(val,index) ->
+		{
+			"custName": vars.initParams.customerName,
+			"custAccNum": val.accountNum,
+			"atmPin": val.atmPin,
+			"bankName": vars.initParams.bank,
+			"accountType": vars.initParams.accType,
+			"ifscCode": val.ifscCode,
+			"branchName": vars.initParams.branchName,
+			"transactionTimeStamp": now() as String,
+			"mailId": val.mailId,
+			"phoneNumber": val.contact
+		}
+	)
+}]]]></db:input-parameters>
+				</db:insert>
+				<flow-ref doc:name="gmail-notification-implementation-flow" doc:id="409d9ff7-db86-4a26-8e1b-7b3788670074" name="gmail-notification-implementation-flow"/>
+				<ee:transform doc:name="output response" doc:id="eb1db294-1e61-44b4-a551-951f552fdcb0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+(vars.inputPayload map(val,index) ->
+{
+	"Message": "Account created successfully with Account number - $(val.accountNum)"
+})]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="INFO - after request" doc:id="175afc3d-f779-43ef-a0f9-a88bd4ac324a" message="----------create cust account API begin--------" />
+	</sub-flow>
+	<sub-flow name="gmail-notification-implementation-flow" doc:id="2217daac-bb28-4dae-a5df-9ce2ca5f5de6" >
+		<logger level="INFO" doc:name="Logger" doc:id="6f705592-d9b7-42d4-8346-85e7458ec0a0" message="-------------before sending email-------------------------"/>
+		<ee:transform doc:name="Transform Message" doc:id="b9839453-e7dc-4ea9-8f14-d384fe34faf1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+"Congratulations! Account created successfully with Account Number - " ++ vars.initParams.custAccNum as String ++ " with bank - " ++ vars.initParams.bank as String]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<email:send doc:name="Send" doc:id="727fc857-8495-475a-ac15-f55a7ae2dc4a" config-ref="Email_SMTP" subject="Congratulations! Account created successfully" fromAddress="poornasai1919@gmail.com">
+			<email:to-addresses >
+				<email:to-address value="poornasai1919@gmail.com" />
+			</email:to-addresses>
+			<email:body contentType="text/plain">
+			</email:body>
+		</email:send>
+		<logger level="INFO" doc:name="Logger" doc:id="928b0b9f-0480-45f9-bc32-e8a08be82b81" message="-------email sent successfully---------"/>
+	</sub-flow>
+</mule>
